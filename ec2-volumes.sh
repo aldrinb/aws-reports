@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-aws s3 ls
+aws ec2 describe-volumes
