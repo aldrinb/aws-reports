@@ -6,6 +6,7 @@ resources:
     uri: git@github.com:aldrinb/aws-reports.git
     branch: master
     private_key: {{aws_reports_deploy_key}}
+    ignore_paths: [ ci/* ]
 
 jobs:
 - name: test-access
