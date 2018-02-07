@@ -12,6 +12,7 @@ jobs:
 - name: test-access
   plan:
   - get: reports
+    trigger: true
   - task: describe-volumes
     config:
       platform: linux
