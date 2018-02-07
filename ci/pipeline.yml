@@ -1,0 +1,15 @@
+---
+resources:
+- name: script
+  type: git
+  source:
+    uri: git@github.com:aldrinb/aws-reports.git
+    branch: master
+    private_key: {{aws_reports_deploy_key}}
+
+jobs:
+- name: test-access
+  plan:
+  - get: script
+
+
