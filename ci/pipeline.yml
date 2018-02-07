@@ -8,7 +8,7 @@ resources:
     private_key: {{aws_reports_deploy_key}}
     ignore_paths: [ ci/* ]
 
-- name: volumes-available-report-s3
+- name: volumes-available-data-s3
   type: s3
   source:
     bucket: {{reports_bucket}}
@@ -18,7 +18,7 @@ resources:
     region_name: &reporting-aws-region eu-central-1
 
 jobs:
-- name: test-access
+- name: create-volume-data
   serial: true
   plan:
   - get: reports
@@ -33,15 +33,33 @@ jobs:
       inputs:
         - name: reports
       outputs:
-        - name: reports-out
+        - name: data
       params:
         AWS_ACCESS_KEY_ID: {{reporting_aws_access_key_id}}
         AWS_SECRET_ACCESS_KEY: {{reporting_aws_secret_access_key}}
         AWS_DEFAULT_REGION: *reporting-aws-region
       run:
         path: reports/ec2-volumes.sh
-        args: [ "reports-out" ]
-  - put: volumes-available-report-s3
+        args: [ "data" ]
+  - put: volumes-available-data-s3
     params:
-      file: reports-out/volumes-available-*.json
+      file: data/volumes-available-*.json
       acl: private
+
+- name: create-volume-reports
+  plan:
+  - get: reports
+  - get: volumes-available-data-s3
+    trigger: true
+  - task: count-available-volumes
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: engineerbetter/pcf-ops
+      inputs:
+        - name: volumes-available-data-s3
+      run:
+        path: reports/ec2-volume-count.sh
+        args: [ "volumes-available-report-s3" ]
