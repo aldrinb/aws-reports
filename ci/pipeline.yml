@@ -8,8 +8,18 @@ resources:
     private_key: {{aws_reports_deploy_key}}
     ignore_paths: [ ci/* ]
 
+- name: volumes-available-report-s3
+  type: s3
+  source:
+    bucket: {{reports_bucket}}
+    regexp: v1/volumes-available-(.*).json
+    access_key_id: {{reporting_aws_access_key_id}}
+    secret_access_key: {{reporting_aws_secret_access_key}}
+    region_name: &reporting-aws-region eu-central-1
+
 jobs:
 - name: test-access
+  serial: true
   plan:
   - get: reports
     trigger: true
@@ -22,10 +32,16 @@ jobs:
           repository: engineerbetter/pcf-ops
       inputs:
         - name: reports
+      outputs:
+        - name: reports-out
       params:
         AWS_ACCESS_KEY_ID: {{reporting_aws_access_key_id}}
         AWS_SECRET_ACCESS_KEY: {{reporting_aws_secret_access_key}}
-        AWS_DEFAULT_REGION: "eu-central-1"
-        AWS_DEFAULT_OUTPUT: "json"
+        AWS_DEFAULT_REGION: *reporting-aws-region
       run:
         path: reports/ec2-volumes.sh
+        args: [ "reports-out" ]
+  - put: volumes-available-report-s3
+    params:
+      file: reports-out/volumes-available-*.json
+      acl: private
