@@ -1,6 +1,6 @@
 ---
 resources:
-- name: script
+- name: reports
   type: git
   source:
     uri: git@github.com:aldrinb/aws-reports.git
@@ -10,6 +10,20 @@ resources:
 jobs:
 - name: test-access
   plan:
-  - get: script
-
-
+  - get: reports
+  - task: describe-volumes
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: engineerbetter/pcf-ops
+      inputs:
+        - name: reports
+      params:
+        AWS_ACCESS_KEY_ID: {{reporting_aws_access_key_id}}
+        AWS_SECRET_ACCESS_KEY: {{reporting_aws_secret_access_key}}
+        AWS_DEFAULT_REGION: "eu-central-1"
+        AWS_DEFAULT_OUTPUT: "json"
+      run:
+        path: reports/ec2-volumes.sh
