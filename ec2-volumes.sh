@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-aws ec2 describe-volumes --filters Name=status,Values=available
+aws --output json ec2 describe-volumes --filters Name=status,Values=available > $1/volumes-available.json
