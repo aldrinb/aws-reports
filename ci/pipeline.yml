@@ -60,6 +60,7 @@ jobs:
           repository: engineerbetter/pcf-ops
       inputs:
         - name: volumes-available-data-s3
+        - name: reports
       run:
         path: reports/ec2-volume-count.sh
-        args: [ "volumes-available-report-s3" ]
+        args: [ "volumes-available-data-s3" ]
